@@ -52,12 +52,12 @@ def getRawLoad():
 
 def getRawPV():
     # return addWeekday(refineRawData(pd.read_csv("../raw/EnergyStoragePerformance.csv")))
-    return refineRawData(pd.read_csv("../raw/EnergyStoragePerformance.csv"))
+    return refineRawData(pd.read_csv("../raw/SolarPVGeneration.csv"))
 
 
 def getRawES():
     # return addWeekday(refineRawData(pd.read_csv("../raw/SolarPVGeneration.csv")))
-    return refineRawData(pd.read_csv("../raw/SolarPVGeneration.csv"))
+    return refineRawData(pd.read_csv("../raw/EnergyStoragePerformance.csv"))
 
 def getRawNet():
     # return addWeekday(refineRawData(pd.read_csv("../raw/NetUsage.csv")))

@@ -55,9 +55,10 @@ def get_rate_schedule(RATE, df):
     ans = np.zeros(len(list_date))
 
     for idx in range(len(list_date)):
-        is_holiday = list_holiday.get(list_date[idx].date()) in RATE['HOLIDAY']
-
-        if is_holiday or (list_date[idx].weekday() > 4):
+        # TODO : ETB 는 holiday를 bizday로 계산
+        # is_holiday = list_holiday.get(list_date[idx].date()) in RATE['HOLIDAY']
+        # if is_holiday or (list_date[idx].weekday() > 4):
+        if list_date[idx].weekday() > 4:
             ans[idx] = 13
         else:
             ans[idx] = list_date[idx].month
