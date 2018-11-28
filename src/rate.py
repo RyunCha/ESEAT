@@ -28,9 +28,9 @@ TOU8_OPTION_B = {
     # Demand Charge
     'FR': 19.02,
     'DC_ON_S': 21.42,
-    'DC_ON_W': 0,
+    'DC_ON_W': 0.0,
     'DC_MIDS': 4.12,
-    'DC_MIDW': 0,
+    'DC_MIDW': 0.0,
     # Non-Bypassable Charge Rate
     'NBC': 0.025,
     # Default Charge
@@ -41,7 +41,7 @@ TOU8_OPTION_B = {
     'MIDS': 0.05477,
     'OFFS': 0.03663,
     #
-    'ON_W': 0,
+    'ON_W': 0.0,
     'MIDW': 0.05294,
     'OFFW': 0.04214
 }
@@ -55,10 +55,10 @@ TOU8_OPTION_R = {
                      "Labor Day", "Veterans Day", "Thanksgiving", "Christmas Day"],
     # Demand Charge
     'FR': 16.64,
-    'DC_ON_S': 0,
-    'DC_ON_W': 0,
-    'DC_MIDS': 0,
-    'DC_MIDW': 0,
+    'DC_ON_S': 0.0,
+    'DC_ON_W': 0.0,
+    'DC_MIDS': 0.0,
+    'DC_MIDW': 0.0,
     # Non-Bypassable Charge Rate
     'NBC': 0.025,
     # Default Charge
@@ -69,7 +69,7 @@ TOU8_OPTION_R = {
     'MIDS': 0.08843,
     'OFFS': 0.03663,
     #
-    'ON_W': 0,
+    'ON_W': 0.0,
     'MIDW': 0.05294,
     'OFFW': 0.04214
 }

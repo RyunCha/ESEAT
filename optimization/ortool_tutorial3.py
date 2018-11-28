@@ -1,3 +1,8 @@
+#-*- coding:utf-8 -*-
+# Author : JoSp90, chofchof
+# Date : 2018.01.22.
+# reference : https://github.com/google/or-tools/issues/565
+
 import numpy as np
 from scipy import special, stats
 from scipy.optimize import linprog

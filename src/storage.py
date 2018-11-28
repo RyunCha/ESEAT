@@ -28,6 +28,9 @@ class Storage():
         tmp = (self.list_month == month) * (self.rate_schedule < 12)
         return np.array([idx for idx, value in enumerate(tmp) if value])
 
+    def get_idx_by_peak_type(self):
+        ans = np.array([self.rate_table[int(table_type-1)] for idx, table_type in enumerate(self.rate_schedule)])
+        return ans.reshape([-1])
 
 def get_rate_table(RATE):
     schedule = np.array([["OFFPEAK"] * 96] * 13)
@@ -67,6 +70,7 @@ def get_rate_schedule(RATE, df):
 if __name__ == '__main__':
     df = dao.getRawLoad()
     st = Storage(df=df, RATE=rate.TOU8_OPTION_B)
+    print("Storage.py demo done")
 
 
 
