@@ -3,6 +3,8 @@
 # Date : 2018.11.26.
 # Contact : jwcha@gridwiz.com
 # Purpose : Energy Toolbase Raw Data 불러오기
+# Attention1 : "EnergyStoragePerformance" (+) means discharge, (-) means charge
+# Attention2 : "SolarPVGeneration" (+) means PV generation
 
 import pandas as pd
 from datetime import datetime
