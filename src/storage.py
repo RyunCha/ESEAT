@@ -38,15 +38,15 @@ def get_rate_table(RATE):
         # SUMMER
         if tgtMonth in np.array(np.where(np.array(RATE['SEASON']) == 'SUMMER')):
             # 8:00 am to Noon and 6:00 pm to 11:00 pm
-            for i in range(32, 92):
+            for i in range(RATE["SUMMER"]["MIDPEAK"][0], RATE["SUMMER"]["MIDPEAK"][1]):
                 schedule[tgtMonth][i] = "MIDPEAK"
             # Noon to 6:00 pm
-            for i in range(48, 72):
+            for i in range(RATE["SUMMER"]["ONPEAK"][0], RATE["SUMMER"]["ONPEAK"][1]):
                 schedule[tgtMonth][i] = "ONPEAK"
         # WINTER
         else:
             # 8:00 am to 9:00 pm
-            for i in range(32, 84):
+            for i in range(RATE["WINTER"]["MIDPEAK"][0], RATE["WINTER"]["MIDPEAK"][1]):
                 schedule[tgtMonth][i] = "MIDPEAK"
     return schedule
 

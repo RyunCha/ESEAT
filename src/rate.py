@@ -25,6 +25,13 @@ TOU8_OPTION_B = {
                'SUMMER', 'WINTER', 'WINTER', 'WINTER'],
     'HOLIDAY': ["New Year's Day", "Washington's Birthday", "Memorial Day", "Independence Day",\
                      "Labor Day", "Veterans Day", "Thanksgiving", "Christmas Day"],
+    'SUMMER': {
+        'MIDPEAK': [32, 92],
+        'ONPEAK': [48, 72],
+    },
+    'WINTER': {
+        'MIDPEAK': [32, 84],
+    },
     # Demand Charge
     'FR': 19.02,
     'DC_ON_S': 21.42,

@@ -41,9 +41,7 @@ def getDemandCharge(st, month):
 
     return dc
 
-def getEnergyCharge(st, month):
-    # TODO
-    # energy cost is not correct
+def get_NBC_EnergyCharge(st, month):
 
     if st.RATE["SEASON"][month - 1] == 'WINTER':
         r = np.array([st.RATE["ON_W"], st.RATE["MIDW"], st.RATE["OFFW"]]) + st.RATE["DLV"] - st.RATE["NBC"]
@@ -76,22 +74,34 @@ def getEnergyCharge(st, month):
     ec = (energy_use * r).sum()
 
     # TODO : maybe unnecessary rounding
-    ec = round(ec)
-    nbc = round(nbc)
-    return ec, nbc, energy_use, over_energy
+    # ec = round(ec)
+    # nbc = round(nbc)
+    return ec, nbc #, energy_use, over_energy
 
+
+def getMontlyTotalCharge(st,month):
+    return sum([st.RATE["CC"] + sum(get_NBC_EnergyCharge())])
 
 if __name__ == '__main__':
-    # df = dao.getRawLoad()
+    year = 0
+    elec_increase = 1.037
+    df = dao.getRawLoad() * pow(elec_increase, year)
+    pv = dao.getRawPV()
     netdf = dao.getRawNet()
-    # st = Storage(df=netdf, RATE=rate.TOU8_OPTION_B)
-    st = Storage(df=netdf, RATE=rate.TOU8_OPTION_R)
+    st = Storage(df=df, RATE=rate.TOU8_OPTION_B)
+    # st = Storage(df=netdf, RATE=rate.TOU8_OPTION_R)
 
+    total_charges = 0
     for month in range(1,13):
         print("**************************")
         print(month)
-        print("NCD", getNCD(st, month))
-        print("MIDPEAK", getMIDPEAK(st, month))
-        print("ONPEAK", getONPEAK(st, month))
-        print("DemandCharge", getDemandCharge(st, month))
-        print("EnergyCharge", getEnergyCharge(st, month))
+        print("NCD, MID, ON", getNCD(st, month), getMIDPEAK(st, month), getONPEAK(st, month))
+        dc = getDemandCharge(st, month)
+        print("DemandCharge", dc)
+        nbc_ec = sum(get_NBC_EnergyCharge(st, month))
+        print("NBC and EnergyCharge", nbc_ec)
+        total_charges += dc + nbc_ec + st.RATE["CC"]
+
+    print("**************************")
+    print("TOTAL YEARLY CHARGE")
+    print(total_charges)

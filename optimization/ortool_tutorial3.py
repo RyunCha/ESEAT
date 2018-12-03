@@ -27,13 +27,14 @@ def build_solve_milp(D, c, p, g):
     for i in range(k):
         r[i] = solver.NumVar(0.0, D[i], 'r' + str(i))
         m[i] = solver.NumVar(0.0, solver.infinity(), 'm'+str(i))
-        b[i] = solver.IntVar(0.0, 1.0, 'b' + str(i))
+        # b[i] = solver.IntVar(0.0, 1.0, 'b' + str(i))
+        b[i] = solver.BoolVar('b'+str(i))
     M = np.max(D)
     cr = np.repeat(p/k, k)
     cm = np.repeat(g/k, k)
     solver.Maximize(-c*y +solver.Sum([cr[i]*r[i] for i in range(k)]) + solver.Sum([cm[i]*m[i] for i in range(k)]))
     for i in range(k):
-        const_r_y[i] = solver.Add(-y + r[i]<=0, 'const_r_y' + str(i))
+        const_r_y[i] = solver.Add(-y + b[i]*r[i]<=0, 'const_r_y' + str(i))
         const_y_m_b[i] = solver.Add(-y + m[i] + b[i]*M <= -D[i] + M, 'const_y_m_b' + str(i))
         const_m_b[i] = solver.Add(m[i] - M*b[i] <= 0, 'const_m_b' + str(i))
     solver.Solve()
