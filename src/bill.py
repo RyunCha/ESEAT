@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from src import dao as dao
 from src import rate as rate
 from src.storage import Storage
@@ -76,32 +77,57 @@ def get_NBC_EnergyCharge(st, month):
     # TODO : maybe unnecessary rounding
     # ec = round(ec)
     # nbc = round(nbc)
-    return ec, nbc #, energy_use, over_energy
+    return nbc, ec #, energy_use, over_energy
 
 
 def getMontlyTotalCharge(st,month):
     return sum([st.RATE["CC"] + sum(get_NBC_EnergyCharge())])
 
-if __name__ == '__main__':
-    year = 0
-    elec_increase = 1.037
-    df = dao.getRawLoad() * pow(elec_increase, year)
-    pv = dao.getRawPV()
-    netdf = dao.getRawNet()
-    st = Storage(df=df, RATE=rate.TOU8_OPTION_B)
-    # st = Storage(df=netdf, RATE=rate.TOU8_OPTION_R)
 
+def getYearlyTotalCharge(st):
+    re = pd.DataFrame(index=[i + 1 for i in range(12)])
     total_charges = 0
-    for month in range(1,13):
-        print("**************************")
-        print(month)
-        print("NCD, MID, ON", getNCD(st, month), getMIDPEAK(st, month), getONPEAK(st, month))
+    for month in range(1, 13):
+        re.loc[month, "NCD"] = getNCD(st, month)
+        re.loc[month, "MID"] = getMIDPEAK(st, month)
+        re.loc[month, "ON"] = getONPEAK(st, month)
         dc = getDemandCharge(st, month)
-        print("DemandCharge", dc)
-        nbc_ec = sum(get_NBC_EnergyCharge(st, month))
-        print("NBC and EnergyCharge", nbc_ec)
-        total_charges += dc + nbc_ec + st.RATE["CC"]
+        nbc, ec = get_NBC_EnergyCharge(st, month)
+        re.loc[month, "CC"] = st.RATE["CC"]
+        re.loc[month, "DemandCharge"] = dc
+        re.loc[month, "NBC"] = nbc
+        re.loc[month, "EnergyCharge"] = ec
+        re.loc[month, "Total"] = dc + nbc + ec + st.RATE["CC"]
+        total_charges += dc + nbc + ec + st.RATE["CC"]
+    return total_charges, re
 
-    print("**************************")
-    print("TOTAL YEARLY CHARGE")
-    print(total_charges)
+
+if __name__ == '__main__':
+    df = dao.getRawLoad()
+    st = Storage(df=df, RATE=rate.TOU8_OPTION_B)
+    total, re = getYearlyTotalCharge(st)
+    print(total)
+#
+# def test():
+#     year = 0
+#     elec_increase = 1.037
+#     df = dao.getRawLoad() * pow(elec_increase, year)
+#     pv = dao.getRawPV()
+#     netdf = dao.getRawNet()
+#     st = Storage(df=df, RATE=rate.TOU8_OPTION_B)
+#     # st = Storage(df=netdf, RATE=rate.TOU8_OPTION_R)
+#
+#     total_charges = 0
+#     for month in range(1,13):
+#         print("**************************")
+#         print(month)
+#         print("NCD, MID, ON", getNCD(st, month), getMIDPEAK(st, month), getONPEAK(st, month))
+#         dc = getDemandCharge(st, month)
+#         print("DemandCharge", dc)
+#         nbc_ec = sum(get_NBC_EnergyCharge(st, month))
+#         print("NBC and EnergyCharge", nbc_ec)
+#         total_charges += dc + nbc_ec + st.RATE["CC"]
+#
+#     print("**************************")
+#     print("TOTAL YEARLY CHARGE")
+#     print(total_charges)

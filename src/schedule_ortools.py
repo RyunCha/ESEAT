@@ -91,9 +91,12 @@ def build_solve_milp(st,
     # Constraint4 : SOC
     for t in range(1, TIME_LENGTH):
         const_soc[t - 1] = solver.Add(
-            CAP_ess * soc_t[t] - CAP_ess * soc_t[t - 1] - (ef_c * p_c_t[t] - ef_d * p_d_t[t]) <= 0, 'test_' + str(t))
-        const_soc2[t - 1] = solver.Add(
-            CAP_ess * soc_t[t] - CAP_ess * soc_t[t - 1] - (ef_c * p_c_t[t] - ef_d * p_d_t[t]) >= 0, 'test2_' + str(t))
+            CAP_ess * soc_t[t] - CAP_ess * soc_t[t - 1] - 0.25*(ef_c * p_c_t[t] - ef_d * p_d_t[t]) == 0, 'test_' + str(t))
+        # const_soc2[t - 1] = solver.Add(
+        #     CAP_ess * soc_t[t] - CAP_ess * soc_t[t - 1] - 0.25*(ef_c * p_c_t[t] - ef_d * p_d_t[t]) >= 0, 'test2_' + str(t))
+    const_soc2[0] = solver.Add(soc_t[0] == 0, 'init_soc')
+    const_soc2[1] = solver.Add(p_c_t[0] == 0, 'init_pct')
+    const_soc2[2] = solver.Add(p_d_t[0] == 0, 'init_pdt')
     # Constraint5 : u_whole
     # const_u_whole[0] = solver.Add(
     #     solver.Sum([u_t[t] * (load_t[t] - pv_t[t] + p_c_t[t] - p_d_t[t])
@@ -107,22 +110,69 @@ def build_solve_milp(st,
     #     const_u[t] = solver.Add(u_t[t] * (load_t[t] - pv_t[t] + p_c_t[t] - p_d_t[t]) <= 0, 'cst_u_' + str(t))
     print("before")
     solver.Solve()
-    return 0
 
-if __name__ == '__main__':
+    dfsoc = st.df.copy()
+    dfnet = st.df.copy()
+    dfess = st.df.copy()
+
+    rowlist = dfsoc.index.tolist()
+    collist = dfsoc.columns.tolist()
+
+    for i in range(len(load_t)):
+        tmprow, tmpcol = divmod(i, 96)
+        row = rowlist[tmprow]
+        col = collist[tmpcol]
+        dfsoc.loc[row, col] = soc_t[i].solution_value()
+        dfess.loc[row, col] = p_c_t[i].solution_value() - p_d_t[i].solution_value()
+        dfnet.loc[row, col] = load_t[i]
+        dfnet.loc[row, col] += dfess.loc[row, col]
+        dfnet.loc[row, col] -= pv_t[i]
+
+    return dfnet, dfsoc, dfess
+
+
+def getScheduleStorage(load, pv, RATEOPTION):
+    st = Storage(df=load, RATE=RATEOPTION)
+    load_t = preproc_df(load)
+    pv_t = preproc_df(pv)
+
+    r_nbc = st.RATE["NBC"]
+    r_on_m = preproc_demand_rate_m(st, "ONPEAK")
+    r_mid_m = preproc_demand_rate_m(st, "MIDPEAK")
+    r_off_m = preproc_demand_rate_m(st, "OFFPEAK")
+
+    c_whole = 0.05
+    PCS_max = 500.0
+    CAP_ESS = 1000.0
+    SOC_min = 0.0
+    SOC_max = 1.0
+    CC = st.RATE["CC"]
+
+    ef_c = 0.96
+    ef_d = (1.0 / 0.96)
+
+    solver = build_solve_milp(st,
+                              load_t=load_t, pv_t=pv_t, \
+                              cost_t=preproc_cost(st), \
+                              r_nbc=r_nbc, r_on_m=r_on_m, r_mid_m=r_mid_m, r_off_m=r_off_m, \
+                              c_whole=c_whole, PCS_max=PCS_max, \
+                              ef_c=ef_c, ef_d=ef_d, CAP_ess=CAP_ESS, SOC_min=SOC_min, SOC_max=SOC_max, CC=CC)
+
+
+def test():
     load = dao.getRawLoad()
     pv = dao.getRawPV()
-    es = dao.getRawES()
-    net = dao.getRawNet()
+    # es = dao.getRawES()
+    # net = dao.getRawNet()
 
     # for test
-    load = dao.getRawLoad().drop(load.index[[i for i in range(31, 365)]])
-    pv = dao.getRawPV().drop(pv.index[[i for i in range(31, 365)]])
-    es = dao.getRawES().drop(es.index[[i for i in range(31, 365)]])
-    net = dao.getRawNet().drop(net.index[[i for i in range(31, 365)]])
+    # load = load.loc[load.index[[i for i in range(0, 31)]]]
+    # pv = pv.loc[pv.index[[i for i in range(0, 31)]]]
+    # es = dao.getRawES().drop(es.index[[i for i in range(31, 365)]])
+    # net = dao.getRawNet().drop(net.index[[i for i in range(31, 365)]])
 
     st = Storage(df=load, RATE=rate.TOU8_OPTION_R)
-    cost_t = preproc_cost(st)
+    # cost_t = preproc_cost(st)
     load_t = preproc_df(load)
     pv_t = preproc_df(pv)
 
@@ -136,17 +186,21 @@ if __name__ == '__main__':
     PCS_max = 500.0
     CAP_ESS = 1000.0
     SOC_min = 0.0
-    SOC_max = 100.0
+    SOC_max = 1.0
     CC = st.RATE["CC"]
 
     ef_c = 0.96
-    ef_d = 0.96
-    #
-    solver = build_solve_milp(st,
+    ef_d = (1.0 / 0.96)
+    #Î
+    dfnet, dfsoc, dfess = build_solve_milp(st,
                      load_t=load_t, pv_t=pv_t,\
-                     cost_t=preproc_cost(st), \
-                     r_nbc=r_nbc, r_on_m=r_on_m, r_mid_m=r_mid_m, r_off_m=r_off_m, \
-                     c_whole=c_whole, PCS_max=PCS_max, \
+                     cost_t=preproc_cost(st),\
+                     r_nbc=r_nbc, r_on_m=r_on_m, r_mid_m=r_mid_m, r_off_m=r_off_m,\
+                     c_whole=c_whole, PCS_max=PCS_max,\
                      ef_c=ef_c, ef_d=ef_d, CAP_ess=CAP_ESS, SOC_min=SOC_min, SOC_max=SOC_max, CC=CC)
 
+    print("hi")
+
+if __name__ == '__main__':
+    test()
     print("hi")

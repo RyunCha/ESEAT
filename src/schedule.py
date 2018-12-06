@@ -13,10 +13,10 @@ if __name__ == '__main__':
     net = dao.getRawNet()
 
     # for test
-    load = dao.getRawLoad().drop(load.index[[i for i in range(31, 365)]])
-    pv = dao.getRawPV().drop(pv.index[[i for i in range(31, 365)]])
-    es = dao.getRawES().drop(es.index[[i for i in range(31, 365)]])
-    net = dao.getRawNet().drop(net.index[[i for i in range(31, 365)]])
+    # load = dao.getRawLoad().drop(load.index[[i for i in range(31, 365)]])
+    # pv = dao.getRawPV().drop(pv.index[[i for i in range(31, 365)]])
+    # es = dao.getRawES().drop(es.index[[i for i in range(31, 365)]])
+    # net = dao.getRawNet().drop(net.index[[i for i in range(31, 365)]])
 
     st = Storage(df=load, RATE=rate.TOU8_OPTION_R)
     cost_t = preproc_cost(st)
