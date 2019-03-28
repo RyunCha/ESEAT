@@ -2,4 +2,4 @@
 
 Focused on Southern California Edison Tariffs
 
-Using MILP
+Using pyomo to operate MILP algorithm
