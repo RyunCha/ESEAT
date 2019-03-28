@@ -1,1 +1,4 @@
-This is not opened
+# California Solar Storage Optimization
+
+Using MILP..
+Focused on Southern California Edison Tariffs
